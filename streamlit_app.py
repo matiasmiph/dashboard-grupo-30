@@ -30,66 +30,47 @@ filtro_producto = st.sidebar.multiselect("Selecciona línea de producto:", df["P
 # --- Aplicar filtros al DataFrame ---
 df_filtrado = df[(df["City"].isin(filtro_ciudad)) & (df["Product line"].isin(filtro_producto))]
 
-# --- Gráfico 1: Ventas por Fecha ---
-st.subheader("1️⃣ Evolución de Ventas Totales en el Tiempo")
+# --- INICIO DEL BLOQUE DE CÓDIGO SOLICITADO (Filtro Slider por Fecha) ---
+# Este bloque debe realizar la conversión, crear el slider y filtrar
+st.sidebar.subheader("Filtro por Fecha")
 
-df['Date'] = pd.to_datetime(df['Date'])
-min_date = df['Date'].min()
-max_date = df['Date'].max()
-date_range = st.slider(
+# CONVERSIÓN DE FECHA DENTRO DE ESTE BLOQUE (Necesario para .min() y .max() funcionen después)
+# Esto puede ser menos eficiente si se repite mucho, pero resuelve el AttributeError
+df_filtrado['Date'] = pd.to_datetime(df_filtrado['Date'], errors='coerce')
+df_filtrado.dropna(subset=['Date'], inplace=True)
+min_date_dt = df_filtrado['Date'].min().to_pydatetime()
+max_date_dt = df_filtrado['Date'].max().to_pydatetime()
+
+# Crear el slider de rango de fechas
+date_range = st.sidebar.slider(
     "Selecciona un rango de fechas:",
-    min_value=min_date,
-    max_value=max_date,
-    value=(min_date, max_date), 
-    format="YYYY-MM-DD"
-)
-start_date, end_date = date_range
-df_filtered_by_date = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
+    min_value=min_date_dt,
+    max_value=max_date_dt,
+    value=(min_date_dt, max_date_dt), # Valor inicial: rango completo del df_filtrado
+    format="YYYY-MM-DD")
 
-if not df_filtered_by_date.empty:
-    ventas_por_fecha = df_filtered_by_date.groupby("Date")["Total"].sum()
-
-    fig1, ax1 = plt.subplots(figsize=(10, 4))
-    ventas_por_fecha.plot(kind="line", ax=ax1, marker="o")
-    ax1.set_title(f"Ventas Totales por Día ({start_date.strftime('%Y-%m-%d')} a {end_date.strftime('%Y-%m-%d')})") # Actualiza título con rango
-    ax1.set_xlabel("Fecha")
-    ax1.set_ylabel("Monto Total de Ventas")
-    ax1.grid(True, linestyle='--', alpha=0.6) # Añadir cuadrícula
-    plt.xticks(rotation=45, ha='right') # Rotar etiquetas de fecha si se superponen
-    plt.tight_layout() # Ajustar diseño para evitar superposiciones
-
-    st.pyplot(fig1) # Muestra el gráfico en Streamlit
-
-else:
-    st.warning("No hay datos en el rango de fechas seleccionado.")
-
-st.subheader("1️⃣ Evolución de Ventas Totales en el Tiempo")
-
-df_filtrado["Date"] = pd.to_datetime(df_filtrado["Date"])
-ventas_por_fecha = df_filtrado.groupby("Date")["Total"].sum()
-
-fig1, ax1 = plt.subplots(figsize=(10, 4))
-ventas_por_fecha.plot(kind="line", ax=ax1, marker="o")
-ax1.set_title("Ventas Totales por Día")
-ax1.set_xlabel("Fecha")
-ax1.set_ylabel("Monto Total de Ventas")
-st.pyplot(fig1)
+start_date_dt, end_date_dt = date_range
+# Aplicar el filtro de fecha
+df_filtrado_por_fecha = df_filtrado[(df_filtrado['Date'] >= start_date_dt) & (df_filtrado['Date'] <= end_date_dt)]
 
 # --- Gráfico 1: Ventas por Fecha ---
 st.subheader("1️⃣ Evolución de Ventas Totales en el Tiempo")
-df_filtrado["Date"] = pd.to_datetime(df_filtrado["Date"])
-ventas_por_fecha = df_filtrado.groupby("Date")["Total"].sum()
+ventas_por_fecha = df_filtrado_por_fecha.groupby("Date")["Total"].sum()
 
-fig1, ax1 = plt.subplots(figsize=(10, 4))
+fig1, ax1 = plt.subplots()
 ventas_por_fecha.plot(kind="line", ax=ax1, marker="o")
-ax1.set_title("Ventas Totales por Día")
+ax1.set_title(f"Ventas Totales por Día ({start_date_dt.strftime('%Y-%m-%d')} a {end_date_dt.strftime('%Y-%m-%d')})")
 ax1.set_xlabel("Fecha")
 ax1.set_ylabel("Monto Total de Ventas")
+ax1.grid(True, linestyle='--', alpha=0.6)
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+
 st.pyplot(fig1)
 
 # --- Gráfico 2: Ingresos por Línea de Producto ---
 st.subheader("2️⃣ Ingresos por Línea de Producto")
-ingresos_por_producto = df_filtrado.groupby("Product line")["Total"].sum().sort_values()
+ingresos_por_producto = df_filtrado_por_fecha.groupby("Product line")["Total"].sum().sort_values()
 
 fig2, ax2 = plt.subplots()
 ingresos_por_producto.plot(kind="barh", ax=ax2, color="seagreen")
@@ -99,7 +80,7 @@ st.pyplot(fig2)
 
 # --- Gráfico 3: Métodos de Pago ---
 st.subheader("3️⃣ Distribución de Métodos de Pago")
-conteo_pago = df_filtrado["Payment"].value_counts()
+conteo_pago = df_filtrado_por_fecha["Payment"].value_counts()
 
 fig3, ax3 = plt.subplots()
 conteo_pago.plot(kind="pie", autopct="%1.1f%%", startangle=90, ax=ax3, colors=sns.color_palette("pastel"))
@@ -110,7 +91,7 @@ st.pyplot(fig3)
 # --- Gráfico 4: Calificaciones de Clientes ---
 st.subheader("4️⃣ Distribución de Calificaciones de Clientes")
 fig4, ax4 = plt.subplots()
-sns.histplot(df_filtrado["Rating"], bins=20, kde=True, color="mediumpurple", ax=ax4)
+sns.histplot(df_filtrado_por_fecha["Rating"], bins=20, kde=True, color="mediumpurple", ax=ax4)
 ax4.set_title("Distribución del Rating")
 ax4.set_xlabel("Rating")
 ax4.set_ylabel("Frecuencia")
@@ -119,7 +100,7 @@ st.pyplot(fig4)
 # --- Gráfico 5: Gasto por Tipo de Cliente ---
 st.subheader("5️⃣ Gasto Total por Tipo de Cliente")
 fig5, ax5 = plt.subplots()
-sns.boxplot(x="Customer type", y="Total", data=df_filtrado, palette="Set2", ax=ax5)
+sns.boxplot(x="Customer type", y="Total", data=df_filtrado_por_fecha, palette="Set2", ax=ax5)
 ax5.set_title("Comparación del Gasto Total según Tipo de Cliente")
 ax5.set_xlabel("Tipo de Cliente")
 ax5.set_ylabel("Total Gastado")

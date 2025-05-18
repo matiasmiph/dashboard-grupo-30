@@ -5,6 +5,7 @@ import streamlit as st
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import datetime
 
 # --- Configuración de la página ---
 st.set_page_config(page_title="Dashboard Ventas - Grupo 30", layout="wide")
@@ -28,6 +29,51 @@ filtro_producto = st.sidebar.multiselect("Selecciona línea de producto:", df["P
 
 # --- Aplicar filtros al DataFrame ---
 df_filtrado = df[(df["City"].isin(filtro_ciudad)) & (df["Product line"].isin(filtro_producto))]
+
+# --- Gráfico 1: Ventas por Fecha ---
+st.subheader("1️⃣ Evolución de Ventas Totales en el Tiempo")
+
+df['Date'] = pd.to_datetime(df['Date'])
+min_date = df['Date'].min()
+max_date = df['Date'].max()
+date_range = st.slider(
+    "Selecciona un rango de fechas:",
+    min_value=min_date,
+    max_value=max_date,
+    value=(min_date, max_date), 
+    format="YYYY-MM-DD"
+)
+start_date, end_date = date_range
+df_filtered_by_date = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
+
+if not df_filtered_by_date.empty:
+    ventas_por_fecha = df_filtered_by_date.groupby("Date")["Total"].sum()
+
+    fig1, ax1 = plt.subplots(figsize=(10, 4))
+    ventas_por_fecha.plot(kind="line", ax=ax1, marker="o")
+    ax1.set_title(f"Ventas Totales por Día ({start_date.strftime('%Y-%m-%d')} a {end_date.strftime('%Y-%m-%d')})") # Actualiza título con rango
+    ax1.set_xlabel("Fecha")
+    ax1.set_ylabel("Monto Total de Ventas")
+    ax1.grid(True, linestyle='--', alpha=0.6) # Añadir cuadrícula
+    plt.xticks(rotation=45, ha='right') # Rotar etiquetas de fecha si se superponen
+    plt.tight_layout() # Ajustar diseño para evitar superposiciones
+
+    st.pyplot(fig1) # Muestra el gráfico en Streamlit
+
+else:
+    st.warning("No hay datos en el rango de fechas seleccionado.")
+
+st.subheader("1️⃣ Evolución de Ventas Totales en el Tiempo")
+
+df_filtrado["Date"] = pd.to_datetime(df_filtrado["Date"])
+ventas_por_fecha = df_filtrado.groupby("Date")["Total"].sum()
+
+fig1, ax1 = plt.subplots(figsize=(10, 4))
+ventas_por_fecha.plot(kind="line", ax=ax1, marker="o")
+ax1.set_title("Ventas Totales por Día")
+ax1.set_xlabel("Fecha")
+ax1.set_ylabel("Monto Total de Ventas")
+st.pyplot(fig1)
 
 # --- Gráfico 1: Ventas por Fecha ---
 st.subheader("1️⃣ Evolución de Ventas Totales en el Tiempo")

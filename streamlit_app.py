@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import squarify
 
 # --- Configuración de la página ---
-st.set_page_config(page_title="Dashboard Ventas - Grupo 30", layout="wide")
+st.set_page_config(page_title="Dashboard Ventas - Grupo 30", layout="centered")
 sns.set_theme(style="whitegrid")
 
 # --- Cargar datos con caché para rendimiento ---

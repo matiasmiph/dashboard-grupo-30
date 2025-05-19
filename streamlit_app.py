@@ -9,7 +9,7 @@ import squarify
 
 # --- Configuración de la página ---
 st.set_page_config(page_title="Dashboard Ventas - Grupo 30", layout="wide")
-sns.set(style="whitegrid")
+sns.set_theme(style="whitegrid")
 
 # --- Cargar datos con caché para rendimiento ---
 @st.cache_data
@@ -53,12 +53,6 @@ start_date_dt, end_date_dt = date_range
 # Aplicar el filtro de fecha
 df_filtrado_por_fecha = df_filtrado[(df_filtrado['Date'] >= start_date_dt) & (df_filtrado['Date'] <= end_date_dt)]
 
-"""
-agregar 
-7 (dos  primeras gráficas)
-8 (dos gráficas)
-y 3D (última, que contiene superficie ideal)
-"""
 
 # --- Gráfico 1: Ventas por Fecha ---
 st.subheader("1️⃣ Evolución de Ventas Totales en el Tiempo")

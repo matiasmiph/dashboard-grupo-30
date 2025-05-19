@@ -138,7 +138,7 @@ st.pyplot(fig7)
 
 st.subheader("8️⃣ Contribución del Ingreso Bruto por Línea de Producto")
 
-ingresos_por_sucursal_producto = df.groupby(['Product line'])['gross income'].sum().reset_index()
+ingresos_por_sucursal_producto = df_filtrado_por_fecha.groupby(['Product line'])['gross income'].sum().reset_index()
 
 ingresos_por_sucursal_producto['Label'] = ingresos_por_sucursal_producto.apply(lambda row: f"{row['Product line']}\n({row['gross income']:.2f})", axis=1)
 

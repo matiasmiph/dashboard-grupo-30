@@ -142,11 +142,11 @@ st.pyplot(fig7)
 
 # --- Gráfico 8 ---
 
-st.subheader("8️⃣ Contribución del Ingreso Bruto por Sucursal y Línea de Producto (Mapa de Árbol)")
+st.subheader("8️⃣ Contribución del Ingreso Bruto por Línea de Producto")
 
-ingresos_por_sucursal_producto = df.groupby(['Branch', 'Product line'])['gross income'].sum().reset_index()
+ingresos_por_sucursal_producto = df.groupby(['Product line'])['gross income'].sum().reset_index()
 
-ingresos_por_sucursal_producto['Label'] = ingresos_por_sucursal_producto.apply(lambda row: f"{row['Branch']} - {row['Product line']}\n({row['gross income']:.2f})", axis=1)
+ingresos_por_sucursal_producto['Label'] = ingresos_por_sucursal_producto.apply(lambda row: f"{row['Product line']}\n({row['gross income']:.2f})", axis=1)
 
 fig8, ax8 = plt.subplots(figsize=(15, 10))
 squarify.plot(sizes=ingresos_por_sucursal_producto['gross income'], label=ingresos_por_sucursal_producto['Label'], alpha=0.8, ax=ax8)

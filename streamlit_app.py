@@ -5,7 +5,7 @@ import streamlit as st
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import datetime
+import squarify
 
 # --- Configuración de la página ---
 st.set_page_config(page_title="Dashboard Ventas - Grupo 30", layout="wide")
@@ -52,6 +52,13 @@ date_range = st.sidebar.slider(
 start_date_dt, end_date_dt = date_range
 # Aplicar el filtro de fecha
 df_filtrado_por_fecha = df_filtrado[(df_filtrado['Date'] >= start_date_dt) & (df_filtrado['Date'] <= end_date_dt)]
+
+"""
+agregar 
+7 (dos  primeras gráficas)
+8 (dos gráficas)
+y 3D (última, que contiene superficie ideal)
+"""
 
 # --- Gráfico 1: Ventas por Fecha ---
 st.subheader("1️⃣ Evolución de Ventas Totales en el Tiempo")
@@ -105,6 +112,50 @@ ax5.set_title("Comparación del Gasto Total según Tipo de Cliente")
 ax5.set_xlabel("Tipo de Cliente")
 ax5.set_ylabel("Total Gastado")
 st.pyplot(fig5)
+
+# --- Gráfico 6 ---
+st.subheader("6️⃣ Mapa de Calor de Correlación entre Variables Numéricas")
+numeric_cols = ['Unit price', 'Quantity', 'Tax 5%', 'Total', 'cogs', 'gross income', 'Rating']
+df_numeric = df_filtrado_por_fecha[numeric_cols]
+correlation_matrix = df_numeric.corr()
+
+fig6, ax6 = plt.subplots(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=.5, ax=ax6)
+
+ax6.set_title('Mapa de Calor de Correlación entre Variables Numéricas')
+st.pyplot(fig6)
+
+# --- Gráfico 7 ---
+st.subheader("7️⃣ Contribución del Ingreso Bruto por Sucursal y Línea de Producto")
+ingresos_por_sucursal_producto = df_filtrado_por_fecha.groupby(['Branch', 'Product line'])['gross income'].sum().reset_index()
+
+fig7, ax7 = plt.subplots(figsize=(10, 8))
+sns.barplot(x='Branch', y='gross income', hue='Product line', data=ingresos_por_sucursal_producto, palette='viridis', ax=ax7)
+
+ax7.set_title('Contribución del Ingreso Bruto por Sucursal y Línea de Producto')
+ax7.set_xlabel('Sucursal')
+ax7.set_ylabel('Ingreso Bruto Total')
+plt.xticks(rotation=0)
+ax7.legend(title='Línea de Producto', bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()
+st.pyplot(fig7)
+
+# --- Gráfico 8 ---
+
+st.subheader("8️⃣ Contribución del Ingreso Bruto por Sucursal y Línea de Producto (Mapa de Árbol)")
+
+ingresos_por_sucursal_producto = df.groupby(['Branch', 'Product line'])['gross income'].sum().reset_index()
+
+ingresos_por_sucursal_producto['Label'] = ingresos_por_sucursal_producto.apply(lambda row: f"{row['Branch']} - {row['Product line']}\n({row['gross income']:.2f})", axis=1)
+
+fig8, ax8 = plt.subplots(figsize=(15, 10))
+squarify.plot(sizes=ingresos_por_sucursal_producto['gross income'], label=ingresos_por_sucursal_producto['Label'], alpha=0.8, ax=ax8)
+
+ax8.set_title('Contribución del Ingreso Bruto por Sucursal y Línea de Producto (Mapa de Árbol)')
+ax8.axis('off')
+plt.tight_layout()
+st.pyplot(fig8)
+
 
 # --- Pie de página ---
 st.markdown("---")
